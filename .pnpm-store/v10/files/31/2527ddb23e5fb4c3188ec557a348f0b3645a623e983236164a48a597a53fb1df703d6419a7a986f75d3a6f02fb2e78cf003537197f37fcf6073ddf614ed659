@@ -1,0 +1,77 @@
+buildscript {
+    ext.safeExtGet = { prop, fallback ->
+        rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+    }
+}
+
+def reactNativeArchitectures() {
+    def value = rootProject.getProperties().get("reactNativeArchitectures")
+    return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+}
+
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+
+android {
+    namespace "com.nitromlkit.digitalink"
+    compileSdkVersion safeExtGet("compileSdkVersion", 35)
+    ndkVersion safeExtGet("ndkVersion", "27.1.12297006")
+
+    defaultConfig {
+        minSdkVersion safeExtGet("minSdkVersion", 26)
+        targetSdkVersion safeExtGet("targetSdkVersion", 35)
+
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=c++_shared"
+                abiFilters (*reactNativeArchitectures())
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+
+    buildFeatures {
+        prefab true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs += [
+                "src/main/kotlin",
+                "../nitrogen/generated/android/kotlin"
+            ]
+        }
+    }
+}
+
+dependencies {
+    // MLKit
+    implementation "com.google.mlkit:digital-ink-recognition:19.0.0"
+
+    // Nitro Modules
+    implementation project(":react-native-nitro-modules")
+
+    // Expo Modules (only used so autolinking calls our OnLoad at startup)
+    implementation project(":expo-modules-core")
+
+    // Kotlin coroutines
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0"
+
+    // React Native
+    implementation "com.facebook.react:react-android"
+}

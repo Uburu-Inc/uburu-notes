@@ -1,0 +1,23 @@
+{
+  "name": "react-native-skia-apple-tvos",
+  "version": "152.0.0",
+  "description": "Skia prebuilt binaries for tvOS (device + simulator)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wcandillon/react-native-skia-binaries.git",
+    "directory": "dist/react-native-skia-apple-tvos"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "libs/**",
+    "Package.swift"
+  ],
+  "skia": {
+    "version": "m152",
+    "platform": "apple",
+    "graphite": false
+  }
+}

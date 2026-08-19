@@ -1,0 +1,16 @@
+{
+  "cxxNamespace": ["mlkit", "digitalink"],
+  "ios": {
+    "iosModuleName": "NitroMLKitDigitalInk"
+  },
+  "android": {
+    "androidNamespace": ["nitromlkit", "digitalink"],
+    "androidCxxLibName": "NitroMLKitDigitalInk"
+  },
+  "autolinking": {
+    "DigitalInkRecognizer": {
+      "ios": { "language": "swift", "implementationClassName": "HybridDigitalInkRecognizer" },
+      "android": { "language": "kotlin", "implementationClassName": "HybridDigitalInkRecognizer" }
+    }
+  }
+}
