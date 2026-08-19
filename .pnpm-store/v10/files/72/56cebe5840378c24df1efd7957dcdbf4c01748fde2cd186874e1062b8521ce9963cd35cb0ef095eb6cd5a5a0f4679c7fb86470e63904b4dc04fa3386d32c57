@@ -1,0 +1,22 @@
+import type { Skia, SkCanvas, SkColorFilter, SkPaint, SkShader, SkImageFilter, SkPathEffect } from "../../skia/types";
+export declare const createDrawingContext: (Skia: Skia, paintPool: SkPaint[], canvas: SkCanvas) => {
+    Skia: Skia;
+    canvas: SkCanvas;
+    track: <T>(value: T) => T;
+    dispose: () => void;
+    paints: SkPaint[];
+    colorFilters: SkColorFilter[];
+    shaders: SkShader[];
+    imageFilters: SkImageFilter[];
+    pathEffects: SkPathEffect[];
+    paintDeclarations: SkPaint[];
+    paintPool: SkPaint[];
+    savePaint: () => void;
+    saveBackdropFilter: () => void;
+    readonly paint: SkPaint;
+    restorePaint: () => SkPaint | undefined;
+    materializePaint: () => void;
+    getOpacity: () => number;
+    setOpacity: (newOpacity: number) => void;
+};
+export type DrawingContext = ReturnType<typeof createDrawingContext>;

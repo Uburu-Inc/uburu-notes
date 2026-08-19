@@ -1,0 +1,15 @@
+export namespace Platform {
+    export let OS: string;
+    export let PixelRatio: number;
+    export function resolveAsset(source: any): any;
+    export function findNodeHandle(): never;
+    export { View };
+}
+declare function View({ children, style: rawStyle }: {
+    children: any;
+    style: any;
+}): React.DetailedReactHTMLElement<{
+    style: any;
+}, HTMLElement>;
+import React from "react";
+export {};

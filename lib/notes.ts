@@ -1,11 +1,7 @@
 import { Directory, File, Paths } from 'expo-file-system';
 import type { SkPath } from '@shopify/react-native-skia';
 
-// Shared by the live canvas and the exported SVG so a saved note looks exactly
-// like what was on screen.
-export const STROKE_COLOR = '#1E1E24';
-export const STROKE_WIDTH = 3;
-export const PAGE_COLOR = '#F7F9FC';
+import { PAGE_COLOR, STROKE_COLOR, STROKE_WIDTH } from './theme';
 
 const NOTES_DIRECTORY = 'notes';
 
