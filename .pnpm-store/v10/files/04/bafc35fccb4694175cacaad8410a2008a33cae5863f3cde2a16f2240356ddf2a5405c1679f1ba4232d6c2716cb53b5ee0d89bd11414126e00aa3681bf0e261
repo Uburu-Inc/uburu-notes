@@ -1,1 +1,0 @@
-export function registerSkiaWorkletSerialization(): void;
