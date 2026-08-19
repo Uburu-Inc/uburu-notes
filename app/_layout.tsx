@@ -8,9 +8,6 @@ import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-c
 
 import { PAGE_COLOR } from '../lib/theme';
 
-// Both of these belong at the very root of the tree: gesture-handler needs to own
-// the top-level view for touches to reach any GestureDetector below it, and the
-// safe-area provider has to sit above the navigator so every screen can read insets.
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>

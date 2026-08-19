@@ -3,6 +3,7 @@
     "name": "uburu-notes",
     "slug": "uburu-notes",
     "version": "1.0.0",
+    "scheme": "uburunotes",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -20,9 +21,14 @@
       "package": "com.eazi_huncho.uburunotes"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "experiments": {
+      "typedRoutes": true
     },
     "plugins": [
+      "expo-router",
       [
         "expo-file-system",
         {

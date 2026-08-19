@@ -1,17 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Alert, type LayoutChangeEvent } from 'react-native';
 import { Canvas, Path, Skia, useCanvasRef, type SkPath } from '@shopify/react-native-skia';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import type { InkPoint, InkStroke } from '@nitro-mlkit/digital-ink';
 import {
   buildSvg,
   forgetFolder,
   saveTextNote,
   saveTextNoteToAppStorage,
+} from '../../lib/notes';
+import {
+  BORDER_COLOR,
+  MUTED_TEXT_COLOR,
+  ACCENT_COLOR,
   PAGE_COLOR,
   STROKE_COLOR,
   STROKE_WIDTH,
-} from '../../lib/notes';
+  SURFACE_COLOR,
+} from '../../lib/theme';
 import {
   RecognitionUnavailableError,
   isRecognitionAvailable,
@@ -179,7 +185,7 @@ export function Note() {
   const isEmpty = renderPaths.length === 0;
 
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.canvasWrapper} onLayout={handleCanvasLayout}>
         <GestureDetector gesture={panGesture}>
           <Canvas style={styles.canvas} ref={canvasRef}>
@@ -227,7 +233,7 @@ export function Note() {
           <Text style={styles.linkText}>Change folder</Text>
         </TouchableOpacity>
       </View>
-    </GestureHandlerRootView>
+    </View>
   );
 }
 
@@ -246,9 +252,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     paddingVertical: 18,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: SURFACE_COLOR,
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
+    borderTopColor: BORDER_COLOR,
   },
   buttonRow: {
     flexDirection: 'row',
@@ -256,13 +262,13 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   savedSummary: {
-    color: '#64748B',
+    color: MUTED_TEXT_COLOR,
     fontSize: 12,
     textAlign: 'center',
     paddingHorizontal: 16,
   },
   linkText: {
-    color: '#007AFF',
+    color: ACCENT_COLOR,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -278,10 +284,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#EEF2F7',
   },
   saveButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: ACCENT_COLOR,
   },
   clearText: {
-    color: '#1E1E24',
+    color: STROKE_COLOR,
     fontSize: 16,
     fontWeight: '600',
   },

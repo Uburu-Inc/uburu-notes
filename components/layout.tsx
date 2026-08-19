@@ -1,21 +1,31 @@
-import { ReactNode } from "react";
-import { StyleSheet } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ReactNode } from 'react';
+import { StyleSheet } from 'react-native';
+import { SafeAreaView, type Edges } from 'react-native-safe-area-context';
+
+import { PAGE_COLOR } from '../lib/theme';
 
 interface Props {
   children: ReactNode;
+  /**
+   * Which sides get inset. Screens that render a navigator header already clear
+   * the status bar, so they pass `['bottom']` rather than padding it twice.
+   */
+  edges?: Edges;
 }
 
-export function Layout(props: Props) {
+// The provider lives once at the root layout; this only applies the insets it
+// exposes, so nesting a screen inside another does not re-measure the window.
+export function Layout({ children, edges = ['top', 'bottom', 'left', 'right'] }: Props) {
   return (
-    <SafeAreaProvider style={styles.container}>
-      {props.children}
-    </SafeAreaProvider>
+    <SafeAreaView style={styles.container} edges={edges}>
+      {children}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: PAGE_COLOR,
   },
 });
