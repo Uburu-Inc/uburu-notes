@@ -9,3 +9,8 @@ export const BORDER_COLOR = '#E2E8F0';
 export const MUTED_TEXT_COLOR = '#64748B';
 export const ACCENT_COLOR = '#007AFF';
 export const DANGER_COLOR = '#DC2626';
+
+export const LOGIN_BACKGROUND = '#F3F4F6';
+export const UBURU_ORANGE = '#F05A22';
+export const LOGIN_BUTTON_COLOR = '#12121E';
+export const INPUT_BORDER_COLOR = '#D1D5DB';

@@ -10,9 +10,9 @@ import {
   saveTextNoteToAppStorage,
 } from '../../lib/notes';
 import {
+  ACCENT_COLOR,
   BORDER_COLOR,
   MUTED_TEXT_COLOR,
-  ACCENT_COLOR,
   PAGE_COLOR,
   STROKE_COLOR,
   STROKE_WIDTH,
@@ -23,6 +23,7 @@ import {
   isRecognitionAvailable,
   recognizeHandwriting,
 } from '../../lib/recognize';
+import { Button } from '../widgets/button';
 
 const READY_MESSAGE = 'Write something, then save it as text';
 const REBUILD_MESSAGE = 'Recognition missing from this build — run npx expo prebuild, then rebuild';
@@ -130,7 +131,12 @@ export function Note() {
   };
 
   const saveNoteAsText = async () => {
-    if (isSaving) return;
+    if (isSaving || currentPath) return;
+
+    if (canvasSize.width <= 0 || canvasSize.height <= 0) {
+      Alert.alert('Not ready', 'The canvas is still loading. Try again in a moment.');
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -182,7 +188,8 @@ export function Note() {
   };
 
   const renderPaths = currentPath ? [...completedPaths, currentPath] : completedPaths;
-  const isEmpty = renderPaths.length === 0;
+  const hasInk = renderPaths.length > 0;
+  const canSave = completedPaths.length > 0 && currentPath === null;
 
   return (
     <View style={styles.container}>
@@ -206,23 +213,24 @@ export function Note() {
 
       <View style={styles.controlPanel}>
         <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={[styles.button, styles.clearButton, isEmpty && styles.buttonDisabled]}
+          <Button
+            label="Clear"
+            variant="secondary"
+            fullWidth={false}
+            disabled={!hasInk}
             onPress={clearNote}
-            disabled={isEmpty}>
-            <Text style={styles.clearText}>Clear</Text>
-          </TouchableOpacity>
+            style={styles.noteButton}
+          />
 
-          <TouchableOpacity
-            style={[
-              styles.button,
-              styles.saveButton,
-              (isEmpty || isSaving || !canRecognize) && styles.buttonDisabled,
-            ]}
+          <Button
+            label={isSaving ? 'Working...' : 'Save as .txt'}
+            variant="accent"
+            fullWidth={false}
+            disabled={!canSave || isSaving || !canRecognize}
+            loading={isSaving}
             onPress={saveNoteAsText}
-            disabled={isEmpty || isSaving || !canRecognize}>
-            <Text style={styles.saveText}>{isSaving ? 'Working...' : 'Save as .txt'}</Text>
-          </TouchableOpacity>
+            style={styles.noteButton}
+          />
         </View>
 
         <Text style={styles.savedSummary} numberOfLines={2}>
@@ -261,6 +269,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 12,
   },
+  noteButton: {
+    borderRadius: 12,
+    minHeight: 48,
+  },
   savedSummary: {
     color: MUTED_TEXT_COLOR,
     fontSize: 12,
@@ -270,30 +282,6 @@ const styles = StyleSheet.create({
   linkText: {
     color: ACCENT_COLOR,
     fontSize: 12,
-    fontWeight: '600',
-  },
-  button: {
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-  },
-  buttonDisabled: {
-    opacity: 0.4,
-  },
-  clearButton: {
-    backgroundColor: '#EEF2F7',
-  },
-  saveButton: {
-    backgroundColor: ACCENT_COLOR,
-  },
-  clearText: {
-    color: STROKE_COLOR,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  saveText: {
-    color: '#FFF',
-    fontSize: 16,
     fontWeight: '600',
   },
 });
