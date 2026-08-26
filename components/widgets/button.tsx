@@ -1,8 +1,10 @@
+import { type ReactNode } from 'react';
 import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
+  View,
   type PressableProps,
   type StyleProp,
   type ViewStyle,
@@ -22,6 +24,8 @@ interface Props extends Omit<PressableProps, 'children' | 'style'> {
   variant?: ButtonVariant;
   loading?: boolean;
   fullWidth?: boolean;
+  /** Drawn to the left of the label; pass an icon already tinted to match. */
+  icon?: ReactNode;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -30,6 +34,7 @@ export function Button({
   variant = 'primary',
   loading = false,
   fullWidth = true,
+  icon,
   disabled,
   style,
   ...pressableProps
@@ -53,7 +58,10 @@ export function Button({
       {loading ? (
         <ActivityIndicator color={labelColors[variant]} />
       ) : (
-        <Text style={[styles.label, { color: labelColors[variant] }]}>{label}</Text>
+        <View style={styles.content}>
+          {icon}
+          <Text style={[styles.label, { color: labelColors[variant] }]}>{label}</Text>
+        </View>
       )}
     </Pressable>
   );
@@ -88,6 +96,11 @@ const styles = StyleSheet.create({
   },
   fullWidth: {
     alignSelf: 'stretch',
+  },
+  content: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
   },
   label: {
     fontSize: 16,

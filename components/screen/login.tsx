@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -11,6 +10,8 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { useKeyboardHeight } from '../../hooks/use_keyboard_height';
 
 import { loginSchema, type LoginFormValues } from '../../lib/schemas/login';
 import {
@@ -38,24 +39,7 @@ export function LoginComponent({ onSignIn }: Props) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<Partial<Record<keyof LoginFormValues, string>>>({});
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-  useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-
-    const showSubscription = Keyboard.addListener(showEvent, (event) => {
-      setKeyboardHeight(event.endCoordinates.height);
-    });
-    const hideSubscription = Keyboard.addListener(hideEvent, () => {
-      setKeyboardHeight(0);
-    });
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
+  const keyboardHeight = useKeyboardHeight();
 
   const handleSubmit = () => {
     const result = loginSchema.safeParse({ username, password });
@@ -96,7 +80,7 @@ export function LoginComponent({ onSignIn }: Props) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
         <View style={styles.panel}>
-          <UburuLogo />
+          <UburuLogo style={styles.logo} />
 
           <Text style={styles.title}>Sign into your account</Text>
           <Text style={styles.subtitle}>
@@ -164,6 +148,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     paddingVertical: 36,
     width: '100%',
+  },
+  logo: {
+    alignSelf: 'center',
+    marginBottom: 28,
   },
   title: {
     color: STROKE_COLOR,

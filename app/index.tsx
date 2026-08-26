@@ -10,7 +10,7 @@ export default function LoginScreen() {
   // `replace` rather than `push`: the back gesture should leave the app, not
   // drop the user back onto a login form they have already cleared.
   const handleSignIn = (_username: string) => {
-    router.replace('/note');
+    router.replace('/home');
   };
 
   return (
