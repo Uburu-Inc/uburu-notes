@@ -21,20 +21,46 @@ export const noteSummarySchema = z.object({
   preview: z.string(),
   strokeCount: z.number(),
   updatedAt: z.string(),
-  /** When the note last reached the server; null while it is only on device. */
+  /**
+   * When the note last reached the server; null while it is only on device.
+   * The index entry is the one kept current — a stored note's own copy is not
+   * rewritten when an upload lands.
+   */
   syncedAt: z.string().nullable(),
 });
 
-export const storedNoteSchema = noteSummarySchema.extend({
-  author: noteAuthorSchema,
-  /** One SVG path per finished stroke, for redrawing the note on the canvas. */
+const notePageSchema = z.object({
+  /** One SVG path per finished stroke, for redrawing the page on the canvas. */
   paths: z.array(z.string()),
-  /** The same strokes as sampled points, which is what recognition needs. */
+  /**
+   * The same strokes as sampled points, which is what recognition needs. In
+   * page coordinates: y runs down the whole page, including any part that was
+   * scrolled off screen when it was written.
+   */
   strokes: z.array(inkStrokeSchema),
+});
+
+const storedNoteShape = noteSummarySchema.extend({
+  author: noteAuthorSchema,
+  /** In order. A note always has at least one, even if it is blank. */
+  pages: z.array(notePageSchema).min(1),
   createdAt: z.string(),
 });
 
+/**
+ * Notes saved before pages existed kept their one page's `paths` and `strokes`
+ * at the top level. They are read as a note with a single page, so they open
+ * as they always did and are saved in the new shape the next time they change.
+ */
+export const storedNoteSchema = z.preprocess((raw) => {
+  if (typeof raw !== 'object' || raw === null || 'pages' in raw) return raw;
+
+  const { paths, strokes, ...rest } = raw as Record<string, unknown>;
+  return { ...rest, pages: [{ paths, strokes }] };
+}, storedNoteShape);
+
 export type NoteSummary = z.infer<typeof noteSummarySchema>;
+export type NotePage = z.infer<typeof notePageSchema>;
 export type StoredNote = z.infer<typeof storedNoteSchema>;
 
 export function summaryOf({

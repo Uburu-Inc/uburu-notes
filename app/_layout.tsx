@@ -20,8 +20,11 @@ export default function RootLayout() {
         {/* The wordmark stands in for the title text on every screen that has a
             header; each screen's `title` stays for accessibility and the iOS
             back label. */}
+        {/* A fade rather than the platform default: that is a 450ms slide on
+            current Android, this is 150ms, and every screen change pays it. */}
         <Stack
           screenOptions={{
+            animation: 'fade',
             contentStyle: styles.screen,
             headerTitle: () => <HeaderLogo />,
           }}>

@@ -51,6 +51,10 @@ export async function listNotes(): Promise<NoteSummary[]> {
 }
 
 export async function readNote(id: string): Promise<StoredNote | null> {
+  // A save queued just before — leaving a note, then opening it straight away
+  // — has to land first, or this would read the note as it was before the edit.
+  await pendingWrites;
+
   const raw = await AsyncStorage.getItem(noteKey(id));
   if (!raw) return null;
 
@@ -74,6 +78,25 @@ export function writeNote(note: StoredNote): Promise<void> {
 
     const others = (await listNotes()).filter((entry) => entry.id !== note.id);
     await saveIndex([summaryOf(note), ...others]);
+  });
+}
+
+/**
+ * Records that the server now holds the note as it was at `updatedAt`. Only the
+ * index entry changes — sync state is read from there alone — so an upload
+ * does not re-serialise every stroke just to flip one field. If a newer edit
+ * was saved while the upload was in flight, what reached the server is already
+ * out of date, and the note is left waiting.
+ */
+export function markNoteSynced(id: string, updatedAt: string, syncedAt: string): Promise<void> {
+  return serialized(async () => {
+    const entries = await listNotes();
+    const entry = entries.find((candidate) => candidate.id === id);
+    if (!entry || entry.updatedAt !== updatedAt) return;
+
+    await saveIndex(
+      entries.map((candidate) => (candidate === entry ? { ...entry, syncedAt } : candidate))
+    );
   });
 }
 

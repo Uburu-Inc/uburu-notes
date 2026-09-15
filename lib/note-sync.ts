@@ -5,7 +5,7 @@ import {
   isApiConfigured,
   uploadNote,
 } from './note-api';
-import { listNotes, listPendingNotes, writeNote } from './note-store';
+import { listNotes, listPendingNotes, markNoteSynced, writeNote } from './note-store';
 import type { NoteSummary, StoredNote } from './schemas/note';
 
 /** Where a save ended up, which is all the screen needs to say about it. */
@@ -26,7 +26,7 @@ export async function saveNote(draft: DraftNote): Promise<SaveOutcome> {
 
   try {
     await uploadNote({ ...draft, syncedAt: null });
-    await writeNote({ ...draft, syncedAt: new Date().toISOString() });
+    await markNoteSynced(draft.id, draft.updatedAt, new Date().toISOString());
     return 'synced';
   } catch (error) {
     // Not a failure from the user's point of view: it is saved, just not there
@@ -50,7 +50,7 @@ export async function syncPendingNotes(): Promise<number> {
   for (const note of waiting) {
     try {
       await uploadNote(note);
-      await writeNote({ ...note, syncedAt: new Date().toISOString() });
+      await markNoteSynced(note.id, note.updatedAt, new Date().toISOString());
       uploaded += 1;
     } catch (error) {
       console.warn(`Could not upload note ${note.id}:`, error);

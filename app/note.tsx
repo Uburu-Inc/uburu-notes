@@ -8,12 +8,16 @@ export default function NoteScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
 
   // The stack header already clears the top inset, so only the bottom is padded.
+  //
+  // Home goes back to the list rather than pushing another copy of it on top
+  // of this note, so going back and forth never stacks up screens. Profile
+  // opens over the note, so back returns to it.
   return (
     <Layout edges={['bottom', 'left', 'right']}>
       <Note
         openId={id}
-        onHome={() => router.navigate('/home')}
-        onProfile={() => router.navigate('/profile')}
+        onHome={() => router.dismissTo('/home')}
+        onProfile={() => router.push('/profile')}
       />
     </Layout>
   );
