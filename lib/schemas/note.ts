@@ -27,6 +27,16 @@ export const noteSummarySchema = z.object({
    * rewritten when an upload lands.
    */
   syncedAt: z.string().nullable(),
+  /**
+   * Why the last upload of this version failed, for the list to show; absent
+   * once it uploads or is edited again. Lives on the index entry only.
+   */
+  uploadError: z.string().nullable().optional(),
+  /**
+   * How the last upload landed: sent as a new file, or found already on the
+   * server (a duplicate the server skipped). Absent until the first upload.
+   */
+  uploadResult: z.enum(['uploaded', 'duplicate']).nullable().optional(),
 });
 
 const notePageSchema = z.object({

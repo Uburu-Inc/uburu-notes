@@ -55,8 +55,12 @@ import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 import type { InkPoint, InkStroke } from '@nitro-mlkit/digital-ink';
 import { createNoteId } from '../../lib/note-store';
 import { forgetNote, peekNote, takeNote } from '../../lib/note-prefetch';
-import { saveNote } from '../../lib/note-sync';
-import { isApiConfigured } from '../../lib/note-api';
+import {
+  leaveNoteInEditor,
+  saveNote,
+  setNoteInEditor,
+  syncPendingNotes,
+} from '../../lib/note-sync';
 import {
   ACCENT_COLOR,
   BORDER_COLOR,
@@ -89,8 +93,7 @@ type CanvasMode = 'write' | 'erase';
 
 const READY_MESSAGE = 'Write with your finger or pen — scroll with the arrows or two fingers';
 const SAVING_MESSAGE = 'Saving...';
-const SAVED_MESSAGE = 'Saved';
-const SAVED_OFFLINE_MESSAGE = 'Saved on this device — will upload when online';
+const SAVED_MESSAGE = 'Saved on this device — uploads when you leave the note';
 const ERASING_MESSAGE = 'Eraser on — drag across the ink to wipe it away';
 const NEEDS_AUTHOR_MESSAGE = 'Tap "Add note" to get started';
 
@@ -821,6 +824,7 @@ export function Note({ openId, onHome, onProfile }: Props) {
     const savedAt = new Date().toISOString();
     const id = (noteId.current ??= createNoteId());
     createdAt.current ??= savedAt;
+    setNoteInEditor(id);
 
     // Read now, before the first await: the ink lists are never edited in
     // place, so this is a consistent copy even if writing carries on.
@@ -835,7 +839,7 @@ export function Note({ openId, onHome, onProfile }: Props) {
     setStatus(SAVING_MESSAGE);
 
     try {
-      const outcome = await saveNote({
+      await saveNote({
         id,
         name: formatAuthorName(writtenBy),
         hospitalId: writtenBy.hospitalId,
@@ -847,7 +851,7 @@ export function Note({ openId, onHome, onProfile }: Props) {
         pages: notePages,
       });
 
-      setStatus(outcome === 'synced' || !isApiConfigured() ? SAVED_MESSAGE : SAVED_OFFLINE_MESSAGE);
+      setStatus(SAVED_MESSAGE);
     } catch (error) {
       console.error(error);
       setStatus('Could not save this note');
@@ -891,12 +895,28 @@ export function Note({ openId, onHome, onProfile }: Props) {
   // would otherwise drop the last edit. The callback is held in a ref so the
   // unmount effect can stay empty of dependencies and still see the newest
   // state.
-  const flushPendingSave = useRef<() => void>(() => {});
-  flushPendingSave.current = () => {
-    if (hasUnsavedEdits.current && author && isWorthSaving()) void persistNote(author);
+  const flushPendingSave = useRef<() => Promise<void>>(async () => {});
+  flushPendingSave.current = async () => {
+    if (hasUnsavedEdits.current && author && isWorthSaving()) await persistNote(author);
   };
 
-  useEffect(() => () => flushPendingSave.current(), []);
+  /**
+   * Saves the last edit to the device, then hands the note over for upload:
+   * it is finished with, so it goes up as a PDF in the background, along with
+   * anything else still waiting. Never awaited — leaving does not wait on it.
+   */
+  const finishNote = useRef(() => {
+    // Read after the save has started, which is when a new note gets its id.
+    const saved = flushPendingSave.current();
+    const id = noteId.current;
+    void saved.finally(() => {
+      if (id) leaveNoteInEditor(id);
+      void syncPendingNotes();
+    });
+  });
+
+  // Back, the home button or a swipe all unmount this screen.
+  useEffect(() => () => finishNote.current(), []);
 
   // Opening a note from the list arrives as a route param. The stored SVG is
   // what redraws the ink; the sampled points travel separately because that is
@@ -909,6 +929,7 @@ export function Note({ openId, onHome, onProfile }: Props) {
     // be handed to the canvas.
     if (initialNote?.id === openId && pages.current === initialPages) {
       forgetNote(openId);
+      setNoteInEditor(openId);
       drawPage(0, 0);
       return;
     }
@@ -944,6 +965,7 @@ export function Note({ openId, onHome, onProfile }: Props) {
       createdAt.current = stored.createdAt;
       preview.current = stored.preview;
       noteId.current = stored.id;
+      setNoteInEditor(stored.id);
       setPager({ index: 0, count: pages.current.length });
       drawPage(0, 0);
 
@@ -973,7 +995,7 @@ export function Note({ openId, onHome, onProfile }: Props) {
 
   /** Drops whatever is on the canvas and asks who the next note is for. */
   const startNewNote = () => {
-    flushPendingSave.current();
+    finishNote.current();
     setCouldNotOpen(false);
 
     pages.current = [blankPage()];

@@ -11,10 +11,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useLogin } from '../../hooks/network-requests/login';
 import { useKeyboardHeight } from '../../hooks/use_keyboard_height';
 
 import { loginSchema, type LoginFormValues } from '../../lib/schemas/login';
 import {
+  DANGER_COLOR,
   LOGIN_BACKGROUND,
   MUTED_TEXT_COLOR,
   STROKE_COLOR,
@@ -40,8 +42,11 @@ export function LoginComponent({ onSignIn }: Props) {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<Partial<Record<keyof LoginFormValues, string>>>({});
   const keyboardHeight = useKeyboardHeight();
+  const { login, loading, error: loginError } = useLogin();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (loading) return;
+
     const result = loginSchema.safeParse({ username, password });
 
     if (!result.success) {
@@ -50,7 +55,8 @@ export function LoginComponent({ onSignIn }: Props) {
     }
 
     setErrors({});
-    onSignIn(result.data.username);
+    const session = await login(result.data);
+    if (session) onSignIn(result.data.username);
   };
 
   const scrollFocusedFieldIntoView = () => {
@@ -116,7 +122,9 @@ export function LoginComponent({ onSignIn }: Props) {
             <Text style={styles.forgotPasswordText}>Forgot password?</Text>
           </TouchableOpacity>
 
-          <Button label="Sign in" onPress={handleSubmit} />
+          {loginError ? <Text style={styles.loginError}>{loginError}</Text> : null}
+
+          <Button label="Sign in" onPress={handleSubmit} loading={loading} />
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Don&apos;t have an account? </Text>
@@ -175,6 +183,12 @@ const styles = StyleSheet.create({
   forgotPasswordText: {
     color: STROKE_COLOR,
     fontSize: 14,
+  },
+  loginError: {
+    color: DANGER_COLOR,
+    fontSize: 14,
+    marginBottom: 12,
+    textAlign: 'center',
   },
   footer: {
     flexDirection: 'row',

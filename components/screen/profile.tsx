@@ -15,6 +15,7 @@ import {
 } from '../../lib/theme';
 import { CameraIcon } from '../icons/camera';
 import { BottomNav } from '../widgets/bottom_nav';
+import { Button } from '../widgets/button';
 
 type ProfileTab = 'details' | 'institution';
 
@@ -30,9 +31,11 @@ const EMPTY_VALUE = '-';
 interface Props {
   onHome: () => void;
   onAddNote: () => void;
+  onLogout: () => void;
+  loggingOut?: boolean;
 }
 
-export function Profile({ onHome, onAddNote }: Props) {
+export function Profile({ onHome, onAddNote, onLogout, loggingOut = false }: Props) {
   const [tab, setTab] = useState<ProfileTab>('details');
   const { personal, institution } = DEMO_PROFILE;
 
@@ -78,6 +81,14 @@ export function Profile({ onHome, onAddNote }: Props) {
             <Field label="Website" value={institution.website} link />
           </View>
         )}
+
+        <Button
+          label="Log out"
+          variant="danger"
+          onPress={onLogout}
+          loading={loggingOut}
+          style={styles.logout}
+        />
       </ScrollView>
 
       <BottomNav
@@ -235,5 +246,8 @@ const styles = StyleSheet.create({
   },
   fieldLink: {
     textDecorationLine: 'underline',
+  },
+  logout: {
+    marginTop: 8,
   },
 });

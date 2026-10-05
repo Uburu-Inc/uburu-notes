@@ -36,6 +36,14 @@ export default function RootLayout() {
             name="profile"
             options={{ title: 'My Profile', headerTitle: () => <HeaderLogo tight /> }}
           />
+          <Stack.Screen
+            name="patient-folder"
+            options={{ title: 'Patient folder', headerTitle: () => <HeaderLogo tight /> }}
+          />
+          <Stack.Screen
+            name="patient-record"
+            options={{ title: 'Patient record', headerTitle: () => <HeaderLogo tight /> }}
+          />
         </Stack>
       </SafeAreaProvider>
     </GestureHandlerRootView>

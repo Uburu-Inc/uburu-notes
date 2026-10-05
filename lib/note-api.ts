@@ -1,48 +1,21 @@
-import { noteSummarySchema, type NoteSummary, type StoredNote } from './schemas/note';
+import { noteSummarySchema, type NoteSummary } from './schemas/note';
 
-// Point the app at a backend by setting EXPO_PUBLIC_API_URL; Expo inlines it at
-// build time. While it is unset there is no server, so every save stays on the
-// device and nothing is ever considered "waiting to upload".
+// Reads the note list from a notes backend, when EXPO_PUBLIC_API_URL points at
+// one; Expo inlines it at build time. Uploading notes does not use this: they
+// go to the scanner service as PDFs (see note-sync.ts).
 const BASE_URL = (process.env.EXPO_PUBLIC_API_URL ?? '').trim().replace(/\/$/, '');
 
 const REQUEST_TIMEOUT = 10_000;
 
 export class ApiNotConfiguredError extends Error {
   constructor() {
-    super('No API endpoint is configured, so this note stays on the device.');
+    super('No notes API endpoint is configured.');
     this.name = 'ApiNotConfiguredError';
   }
 }
 
 export function isApiConfigured() {
   return BASE_URL.length > 0;
-}
-
-/**
- * Sends the note under its own id, so re-sending an edited note replaces the
- * server's copy instead of adding a second one. That also makes a retry after a
- * connection drop safe to repeat.
- */
-export async function uploadNote(note: StoredNote): Promise<void> {
-  const response = await request(`/notes/${encodeURIComponent(note.id)}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      id: note.id,
-      name: note.name,
-      hospitalId: note.hospitalId,
-      author: note.author,
-      preview: note.preview,
-      strokeCount: note.strokeCount,
-      pages: note.pages,
-      createdAt: note.createdAt,
-      updatedAt: note.updatedAt,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Upload rejected with ${response.status}`);
-  }
 }
 
 /** The notes the server already holds, for merging into the on-device list. */

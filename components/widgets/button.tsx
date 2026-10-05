@@ -12,12 +12,13 @@ import {
 
 import {
   ACCENT_COLOR,
+  DANGER_COLOR,
   LOGIN_BUTTON_COLOR,
   STROKE_COLOR,
   SURFACE_COLOR,
 } from '../../lib/theme';
 
-type ButtonVariant = 'primary' | 'secondary' | 'accent';
+type ButtonVariant = 'primary' | 'secondary' | 'accent' | 'danger';
 
 interface Props extends Omit<PressableProps, 'children' | 'style'> {
   label: string;
@@ -71,6 +72,7 @@ const labelColors: Record<ButtonVariant, string> = {
   primary: SURFACE_COLOR,
   secondary: STROKE_COLOR,
   accent: SURFACE_COLOR,
+  danger: DANGER_COLOR,
 };
 
 const variantStyles = StyleSheet.create({
@@ -82,6 +84,11 @@ const variantStyles = StyleSheet.create({
   },
   accent: {
     backgroundColor: ACCENT_COLOR,
+  },
+  danger: {
+    backgroundColor: SURFACE_COLOR,
+    borderColor: DANGER_COLOR,
+    borderWidth: 1,
   },
 });
 

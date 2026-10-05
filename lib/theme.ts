@@ -9,6 +9,7 @@ export const BORDER_COLOR = '#E2E8F0';
 export const MUTED_TEXT_COLOR = '#64748B';
 export const ACCENT_COLOR = '#007AFF';
 export const DANGER_COLOR = '#DC2626';
+export const SUCCESS_COLOR = '#16A34A';
 
 // Profile chrome: a faintly blue page with a flat tile behind the avatar.
 export const SUBTLE_BACKGROUND = '#F2F4F8';

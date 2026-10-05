@@ -88,14 +88,35 @@ export function writeNote(note: StoredNote): Promise<void> {
  * was saved while the upload was in flight, what reached the server is already
  * out of date, and the note is left waiting.
  */
-export function markNoteSynced(id: string, updatedAt: string, syncedAt: string): Promise<void> {
+export function markNoteSynced(
+  id: string,
+  updatedAt: string,
+  syncedAt: string,
+  uploadResult: 'uploaded' | 'duplicate'
+): Promise<void> {
+  return updateIndexEntry(id, updatedAt, { syncedAt, uploadError: null, uploadResult });
+}
+
+/**
+ * Records why an upload of the note as it was at `updatedAt` failed. The note
+ * stays waiting, so the next sync tries it again.
+ */
+export function markNoteUploadFailed(id: string, updatedAt: string, uploadError: string) {
+  return updateIndexEntry(id, updatedAt, { uploadError });
+}
+
+function updateIndexEntry(
+  id: string,
+  updatedAt: string,
+  changes: Partial<NoteSummary>
+): Promise<void> {
   return serialized(async () => {
     const entries = await listNotes();
     const entry = entries.find((candidate) => candidate.id === id);
     if (!entry || entry.updatedAt !== updatedAt) return;
 
     await saveIndex(
-      entries.map((candidate) => (candidate === entry ? { ...entry, syncedAt } : candidate))
+      entries.map((candidate) => (candidate === entry ? { ...entry, ...changes } : candidate))
     );
   });
 }
